@@ -1,4 +1,28 @@
 const form = document.querySelector('#formCadastro');
+const buscarCep = document.querySelector('#buscarCep');
+const cep = document.querySelector('#cep');
+
+// Adiciona um ouvinte de evento para o clique no botão "Buscar"
+buscarCep.addEventListener("click", async function() {
+    // Expressão regex
+    const valor = cep.value.replace(/\D/g, ""); // Remove caracteres não numéricos
+   if (valor.length !== 8) {
+        alert("CEP inválido. Por favor, digite um CEP com 8 dígitos.");
+        return;
+    } try {
+        const resposta = await fetch(`https://viacep.com.br/ws/${valor}/json/`);
+        const dados = await resposta.json();
+        console.log(dados);
+        if (!resposta.ok || dados.erro) throw new Error("CEP não encontrado.");
+        document.querySelector('#logradouro').value = dados.logradouro;
+        document.querySelector('#bairro').value = dados.bairro;
+        document.querySelector('#cidade').value = dados.localidade;
+        document.querySelector('#estado').value = dados.uf;
+        alert("Endereço preenchido com sucesso!");
+    } catch (error) {
+        alert("Erro ao buscar CEP. Por favor, tente novamente.");
+    }
+});
 
 // Adiciona um ouvinte de evento para o envio do formulário
 form.addEventListener("submit", function(event) {
