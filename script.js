@@ -1,6 +1,21 @@
 const form = document.querySelector('#formCadastro');
 const buscarCep = document.querySelector('#buscarCep');
 const cep = document.querySelector('#cep');
+const estado = document.querySelector('#estado')
+
+function mensagem(texto, tipo = "sucesso") {
+    Toastify({
+        text: texto,
+        duration: 3000,
+        gravity: "top",
+        position: "right",
+        style: {
+            background: tipo === "sucesso"
+            ? "#198754"
+            : "#dc3545"
+        },
+    }).showToast();
+}
 
 // Adiciona um ouvinte de evento para o clique no botão "Buscar"
 buscarCep.addEventListener("click", async function() {
@@ -18,9 +33,19 @@ buscarCep.addEventListener("click", async function() {
         document.querySelector('#bairro').value = dados.bairro;
         document.querySelector('#cidade').value = dados.localidade;
         document.querySelector('#estado').value = dados.uf;
-        alert("Endereço preenchido com sucesso!");
+        
+        
     } catch (error) {
-        alert("Erro ao buscar CEP. Por favor, tente novamente.");
+        Toastify({
+            text: error.message || "Não foi possível buscar o CEP.",
+            duration: 3000,
+            gravity: "top",
+            position: "right",
+            style: {
+                background: "#dc3545",
+                borderRadius: "12px"
+            }
+        }).showToast();
     }
 });
 
@@ -33,3 +58,23 @@ form.addEventListener("submit", function(event) {
     ));
     form.reset();
 });
+
+// Criar opções de seleção dinamicamente
+function adicionarOpcao(select, texto, valor) {
+    select.add(new Option(texto, valor));
+}
+
+// Carregar os estados disponíveis
+async function carregarEstado() {
+    try {
+        const resposta = await fetch("https://servicodados.ibge.gov.br/api/v1/localidades/estados?orderBy=nome");
+        if (!resposta.ok) {
+            throw new Error("Não foi possível Carregar os estados.");
+        }
+        const estados = await resposta.json();
+        estados.forEach(item => adicionarOpcao(estado, item.nome, item.sigla));
+    } catch (erro) {
+        mensagem(erro.message, "erro")
+    }
+}
+carregarEstado()
